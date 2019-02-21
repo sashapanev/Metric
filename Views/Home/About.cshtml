@@ -1,0 +1,15 @@
+@{
+    ViewData["Title"] = "About";
+    var jobs = ViewData["Jobs"] as List<string>;
+}
+
+<h2>@ViewData["Title"]</h2>
+
+
+<h3>Current jobs</h3>
+<ul>
+@foreach(var job in jobs)
+{
+   <li>@job</li>
+}
+</ul>
