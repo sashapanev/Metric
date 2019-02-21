@@ -9,7 +9,7 @@ namespace MetricGen
         public List<string> MainFunc()
         {
             List<string> result = new List<string>();
-            List<string> shorCodes = new List<string>();
+            List<string> shortCodes = new List<string>();
             Metric someMetric = new Metric();
             string json = someMetric.GetJSON("jobs");
             List<Job> jobs = someMetric.DeserJobsOutput(json);
@@ -18,7 +18,7 @@ namespace MetricGen
                 if ((job.department == "IT") & (job.state == "published"))
                 {
                     string res = job.shortcode + " - " + job.title;
-                    shorCodes.Add(job.shortcode);
+                    shortCodes.Add(job.shortcode);
                     //Console.WriteLine(res);
                     result.Add(res);
                 }
@@ -34,12 +34,15 @@ namespace MetricGen
                 st.candCount = 0;
                 CCounter.stages.Add(st);
             }
-
-            foreach (string code in shorCodes)
+            int codesLength = shortCodes.Count;
+            int n = 0;
+            int[] fullCount = new int[6] {0,0,0,0,0,0,};
+            foreach (string code in shortCodes)
             {
                 string sc = "shortcode=" + code;
                 string cands = someMetric.GetJSONwithParams("candidates", sc);
                 List<Candidate> cand = someMetric.DeserCandidatesOutput(cands);
+                
                 
                 foreach(Candidate cd in cand)
                 {
@@ -79,15 +82,29 @@ namespace MetricGen
                         //candNames = candNames + cd.name + " ";
                     }
                 }
+
+                if(n < codesLength)
+                {
+                    result[n] = result[n] + " : Applied = " + CCounter.stages[0].candCount + ", Screening = " + CCounter.stages[1].candCount + ", Tech int = " + CCounter.stages[2].candCount + ", Test day/CTO = " + CCounter.stages[3].candCount + ", Offer = " + CCounter.stages[4].candCount + ", Hired = " + CCounter.stages[5].candCount; 
+                    n++;
+                }
+                else n=0;
+                
+                for(int t = 0; t < fullCount.Length; t++)
+                {
+                    fullCount[t]+=CCounter.stages[t].candCount;
+                    CCounter.stages[t].candCount = 0;
+                }
+                
             }
 
             string countRes = String.Empty;
-            for(int i = 0; i < 6; i++)
+            for(int i = 0; i < fullCount.Length; i++)
             {
-                countRes = countRes + CCounter.stages[i].candCount + " - ";
+                countRes = countRes + CCounter.stages[i].stageName + " -- " + fullCount[i].ToString() + ", ";
             }
             result.Add(countRes);
-            result.Add(candNames);
+            //result.Add(candNames);
 
             
             return result;
